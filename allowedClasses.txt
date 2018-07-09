@@ -1,0 +1,1 @@
+{"java.io.PrintStream":"sha1","java.lang.System":"sha1","java.lang.Object":"sha1","SimpleApp.SimpleMain":"sha1","java.lang.String":"sha1","java.lang.Integer":"sha1","java.lang.Exception":"sha1","java.util.ArrayList":"sha1"}
