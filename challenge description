@@ -1,0 +1,94 @@
+Hi Yaniv,
+
+ 
+
+It was great meeting you today. I wanted to provide you with an assignment for the next step. A task that we’ve discussed today 😊
+
+ 
+
+Assignment Description:
+
+The goal is to be able to research and implement a POC that shows how we can identify changes in running of Java applications.
+
+ 
+
+The input we have is a container that runs a Java application. We would like to create a baseline of approved behavior of this Java application, 
+that includes list of classes that the application is running.
+
+We would like to identify any abnormal behavior from the baseline, meaning an application is now running a class that was not used before.
+
+ 
+
+The second part of the assignment is to identify cases where an “approved” class is modified. The use case here is that an attacker replaced a class that is part of the baseline
+and we would like to identify these cases.
+
+ 
+
+Deliverables:
+
+A working POC that demonstrates three flows:
+creating a profiling of approved classes
+identifying use of a new class that is not part of the profile
+Identifying use of a class that was modified
+Documentation of the work done
+Ideas for future improvements and additional areas to research
+ 
+
+Let me know when you’ll be able to complete this task.
+
+I’ll be happy to answer any questions over phone: 052-6626707
+
+ 
+
+Regards,
+
+Amir
+
+
+היי אמיר!
+צרפתי את הפתרון שלי לאתגר!
+
+הסבר כללי (הפרטים מתועדים בsource code):
+בעזרת יצירת custom class loader, הצלחתי לתפוס כל בקשה לטעינה של class (הבקשות כמובן מתבצעות ע"י ה-jar שמשתמש בclass loader שלי).
+
+הסבר קצת יותר מעשי עבור התמונה הגדולה:
+יצרתי שני classLoaders אותם אפעיל על קובץ jar שיינתן לי כinput, הראשון יורץ לזמן קצר אך ורק על מנת ליצור פרופיל ולאחר מכן האפליקציה תורץ באופן קבוע בעזרת הclassLoader השני: 
+1. הclassLoader הראשון יתפוס כל בקשה לטעינה של class ויכתוב את שם הclass לקובץ לוקאלי.
+2. הclassLoader השני יתפוס כל בקשה לטעינה של class ויוודא אל מול הקובץ שנוצר בסעיף הראשון, האם הclass הוא חלק מהפרופיל שיצרתי.
+
+טכנית איך עושים את זה?
+ה-input שלי הוא container וקובץ jar. 
+יש לכתוב  bash script שיריץ את הפקודות הבאות בכדי להפעיל את שני ה-classLoaders.
+כל פקודה תריץ את ה-jar שניתן לי כ-input יחד עם classLoader שונה:
+
+java -cp ./CustomClassLoader.jar:SimpleApp.jar -Djava.system.class.loader=helloWorld.CustomClassLoader SimpleApp.SimpleMain
+
+java -cp ./CustomClassLoader2.jar:SimpleApp.jar -Djava.system.class.loader=helloWorld.CustomClassLoader SimpleApp.SimpleMain
+
+
+
+חלק שני של התרגיל (וידוא אמינות תוכן ה-classים ולא רק ע"פ שם ה-class):
+הרעיון שלי היה לבצע חתימה קריפטוגרפית עבור כל class שנטען בclassLoader הראשון, ולוודא את החתימה הזו בclassLoader השני.
+תוך כדי תיקונים אחרונים בקוד, הבנתי שגם אם הרעיון הזה עובד, זו כנראה לא הדרך לעשות זאת. (יש דברים שאני כנראה לא החכם הראשון שחשב לעשות, מישהו בטוח כבר עשה את זה).
+אני דיי בטוח שבעזרת java אוכל לבצע חתימה על classים מבלי לממש את זה בעצמי, הגעתי למסקנה הזו כשהדפסתי את המשתנה protectionDomain עבור class מסויים:
+ProtectionDomain  (file:/Users/yanivstein/Desktop/aaa/SimpleApp.jar <no signer certificates>)
+ jdk.internal.loader.ClassLoaders$AppClassLoader@4f8e5cde
+ <no principals>
+ java.security.Permissions@725bef66 (
+ ("java.io.FilePermission" "/Users/yanivstein/Desktop/aaa/SimpleApp.jar" "read")
+ ("java.lang.RuntimePermission" "exitVM")
+)
+
+
+
+
+
+ולכן, מבחינת כיווני מחקר נוספים:
+1. כנראה קיים מנגנון java signer certificate for class. צריך להבין מה זה בדיוק  ואיך משתמשים בזה על מנת לחתום classים.
+2. לבדוק התנהגות כאשר הקוד מכיל dynamic class load ולהבין האם הקוד שלי תופס את המקרים האלה.
+3. להבין האם יש צורך בהפעלת הפונקציונליות של האפליקציה בכדי שכל הclassים יטענו.
+4. האם הקוד שלי תופס מצב בו קיים class פנימי?
+5. לא חסר מקום לסדר את הקוד, כרגע הוא רק ברמה של POC :)
+
+נתראה ביום ראשון,
+יניב
